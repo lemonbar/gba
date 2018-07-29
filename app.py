@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from flask import Flask
+from flask import Flask,jsonify
 from flask_sqlalchemy import SQLAlchemy
+from marshmallow import Schema, fields, ValidationError, pre_load
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:Password01!@localhost/gba?charset=utf8mb4'
@@ -15,6 +16,13 @@ class Team(db.Model):
 
     def __repr__(self):
         return '<Team %r>' % self.id
+
+class TeamSchema(Schema):
+    id = fields.Int(dump_only=True)
+    name = fields.Str()
+
+team_schema = TeamSchema()
+teams_schema = TeamSchema(many=True)
 
 class Player(db.Model):
     __tablename__='PLAYER'
@@ -47,5 +55,11 @@ class MatchDetail(db.Model):
 @app.route("/")
 def home():
     return "X86黄金联赛(GBA)"
+
+@app.route("/teams")
+def get_teams():
+    teams = Team.query.all()
+    result = teams_schema.dump(teams)
+    return jsonify({'teams':result.data})
 
 db.create_all()
