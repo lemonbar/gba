@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from flask import Flask,jsonify
+from flask import Flask,jsonify,render_template
 from flask_sqlalchemy import SQLAlchemy
 from marshmallow import Schema, fields, ValidationError, pre_load
 
@@ -56,10 +56,15 @@ class MatchDetail(db.Model):
 def home():
     return "X86黄金联赛(GBA)"
 
-@app.route("/teams")
+@app.route("/teams",methods=['POST'])
 def get_teams():
     teams = Team.query.all()
     result = teams_schema.dump(teams)
     return jsonify({'teams':result.data})
+
+@app.route("/teams",methods=['GET'])
+def get_teams_html():
+    teams = Team.query.all()
+    return render_template('team.html',teams=teams)
 
 db.create_all()

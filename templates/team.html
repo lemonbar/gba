@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<script src="./static/vue.min.js"></script>
+<link rel="stylesheet" href="./static/app.css" type="text/css">
+</head>
+<body>
+<div id="main">
+  <table>
+    <tr>
+      <th>序号</th>
+      <th>队名</th>
+    </tr>
+{% for team in teams %}
+    <tr>
+    <td>{{ team.id }}</td>
+    <td>{{ team.name }}</td>
+    </tr>
+{% endfor %}
+  </table>
+</div>
+</body>
+</html>
