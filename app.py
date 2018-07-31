@@ -62,7 +62,7 @@ def get_teams():
     result = teams_schema.dump(teams)
     return jsonify({'teams':result.data})
 
-@app.route("/team/add",methods=['POST'])
+@app.route("/team",methods=['POST'])
 def save_team():
     req_data = request.get_json()
     print(req_data)
@@ -70,7 +70,13 @@ def save_team():
     team = Team(name=team_name)
     db.session.add(team)
     db.session.commit()
-    return "保存成功";
+    return "保存成功"
+
+@app.route("/team/test/lemonbar")
+def team_clean():
+    db.session.query(Team).delete()
+    db.session.commit()
+    return "clear all team"
 
 @app.route("/teams",methods=['GET'])
 def get_teams_html():
