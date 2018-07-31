@@ -23,10 +23,10 @@ var app = new Vue({
         axios.post('/team', {name:this.name}, {headers: {
             'Content-Type':'application/json;charset=UTF-8'
           }}).then(function(response) {
-                alert(response);
+                alert("添加成功");
             })
             .catch(function(error) {
-                alert(error);
+                alert("操作失败");
             });
     }
   }
