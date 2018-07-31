@@ -7,29 +7,22 @@
 </head>
 <body>
 <div id="main">
-  <p>输入新队名字：</p>
+  <p>输入新队员信息：</p>
   <form style="width=100%">
     <input v-model="name" placeholder="输入姓名"><br/>
-    <button v-on:click="save">保存</button>
+    <input v-model="salary" placeholder="输入薪资"><br/>
+    <input v-model="team" placeholder="队伍序号"><br/>
   </form>
-  <p>确认信息"{{ name }}"</p>
+  <p>{{ name }}</p>
 </div>
 <script>
 var app = new Vue({
   el: '#main',
   data: {
     name: '',
-  },
-  methods: {
-    save: function(event) {
-        axios.post('/team/add', {name: this.name })
-            .then(function(response) {
-                alert("success");
-            })
-            .catch(function(error) {
-                alert(error);
-            });
-    }
+    salary: '',
+    team: '',
+    message: 'GBA'
   }
 })
 </script>

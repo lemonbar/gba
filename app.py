@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from flask import Flask,jsonify,render_template
+from flask import Flask,jsonify,render_template,request
 from flask_sqlalchemy import SQLAlchemy
 from marshmallow import Schema, fields, ValidationError, pre_load
 
@@ -61,6 +61,16 @@ def get_teams():
     teams = Team.query.all()
     result = teams_schema.dump(teams)
     return jsonify({'teams':result.data})
+
+@app.route("/team/add",methods=['POST'])
+def save_team():
+    req_data = request.get_json()
+    print(req_data)
+    team_name = req_data['name']
+    team = Team(name=team_name)
+    db.session.add(team)
+    db.session.commit()
+    return "保存成功";
 
 @app.route("/teams",methods=['GET'])
 def get_teams_html():
