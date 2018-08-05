@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<script src="./static/vue.min.js"></script>
+<link rel="stylesheet" href="./static/app.css" type="text/css">
+</head>
+<body>
+<div id="main">
+  <table>
+<tr>
+<th>队伍</th>
+<th>积分</th>
+</tr>
+{% for team_id,score in scores.items() %}
+ <tr>
+<td>{{ teams[team_id] }}</td>
+<td>{{ score }}</td>
+</tr>
+{% endfor %}
+  </table>
+  <table>
+    <tr>
+      <th>主队:得分</th>
+      <th>客队:得分</th>
+    </tr>
+{% for match in matches %}
+    <tr>
+    <td>{{ teams[match.home_team_id] }}:{{ match.home_team_score }}</td>
+    <td>{{ teams[match.away_team_id] }}:{{ match.away_team_score }}</td>
+    </tr>
+{% endfor %}
+  </table>
+</div>
+</body>
+</html>

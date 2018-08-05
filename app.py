@@ -46,19 +46,21 @@ class Match(db.Model):
     match_date = db.Column(db.DateTime)
     home_team_id = db.Column(db.Integer,db.ForeignKey('TEAM.id'),nullable=False)
     away_team_id = db.Column(db.Integer,db.ForeignKey('TEAM.id'),nullable=False)
+    home_team_score = db.Column(db.Integer)
+    away_team_score = db.Column(db.Integer)
 
     def __init__(self, home_team_id, away_team_id):
         self.home_team_id = home_team_id
         self.away_team_id = away_team_id
-        if match_date is None:
-            match_date = datetime.utcnow()
-        self.match_date = match_date
+        #if match_date is None:
+        #    match_date = datetime.utcnow()
+        #self.match_date = match_date
 
-class MatchPlayer(db.Model):
-    __tablename__='MATCH_PLAYER'
+#class MatchPlayer(db.Model):
+#    __tablename__='MATCH_PLAYER'
   
-class Score(db.Model):
-    __tablename__='SCORE'
+#class Score(db.Model):
+#    __tablename__='SCORE'
 
 class MatchDetail(db.Model):
     __tablename__='MATCH_DETAIL'
@@ -96,6 +98,12 @@ def team_clean():
     db.session.commit()
     return "clear all team"
 
+@app.route("/match/test/lemonbar")
+def match_clean():
+    db.session.query(Match).delete()
+    db.session.commit()
+    return "clear all match"
+
 @app.route("/teams",methods=['GET'])
 def get_teams_html():
     teams = Team.query.all()
@@ -120,5 +128,62 @@ def player_add():
     db.session.add(player)
     db.session.commit()
     return "保存成功"
+
+@app.route("/match/history",methods=['GET'])
+def match_history_load():
+    teams = Team.query.all()
+    return render_template('match_history.html', teams=teams)
+
+@app.route("/match/history",methods=['POST'])
+def match_history_add():
+    req_data = request.get_json()
+    print(req_data)
+    home_team = req_data['home_team']
+    away_team = req_data['away_team']
+    home_score = req_data['home_team_score']
+    away_score = req_data['away_team_score']
+    date = req_data['match_date']
+    if(date == ''):
+        date = datetime.utcnow()
+    match = Match(home_team_id=home_team,away_team_id=away_team)
+    match.home_team_score = home_score
+    match.away_team_score = away_score
+    match.match_date = date
+    db.session.add(match)
+    db.session.commit()
+    return "保存成功"
+
+@app.route("/matches",methods=['GET'])
+def matchs_list():
+    matches = Match.query.order_by(Match.match_date).all()
+    teams = Team.query.all()
+    scores = {}
+    pre_match_winner_id = None
+    for match in matches:
+        if(not scores.has_key(match.home_team_id)):
+            scores[match.home_team_id] = 0
+        if(not scores.has_key(match.away_team_id)):
+            scores[match.away_team_id] = 0
+        if(match.home_team_score > match.away_team_score):
+            scores[match.home_team_id] += match.home_team_score
+            scores[match.home_team_id] += 4
+            scores[match.away_team_id] += match.away_team_score
+            if(match.home_team_id == 4):
+                scores[match.away_team_id] -= 4
+            if(pre_match_winner_id != None and pre_match_winner_id == match.home_team_id):
+                scores[match.home_team_id] += 4
+            pre_match_winner_id = match.home_team_id
+        else:
+            scores[match.away_team_id] += match.away_team_score
+            scores[match.away_team_id] += 4
+            scores[match.home_team_id] += match.home_team_score
+            if(match.away_team_id == 4):
+                scores[match.home_team_id] -= 4
+            pre_match_winner_id = match.away_team_id
+
+    team_dic = {}
+    for team in teams:
+        team_dic[team.id]=team.name
+    return render_template('matches.html', matches=matches,teams=team_dic,scores=scores)
 
 db.create_all()

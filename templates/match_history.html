@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<script src="/static/vue.min.js"></script>
+<script src="/static/axios.min.js"></script>
+</head>
+<body>
+<div id="main">
+  <p>输入主队信息：</p>
+  <select v-model="home_team">
+  {% for team in teams %}
+    <option value="{{ team.id }}">{{ team.name }}</option>
+  {% endfor %}
+  </select>
+  <input v-model="home_team_score" placeholder="输入得分"><br/>
+  <p>输入客队信息：</p>
+  <select v-model="away_team">
+  {% for team in teams %}
+    <option value="{{ team.id }}">{{ team.name }}</option>
+  {% endfor %}
+  </select>
+  <input v-model="away_team_score" placeholder="输入得分"><br/>
+  <button v-on:click="save">保存</button>
+</div>
+<script>
+var app = new Vue({
+  el: '#main',
+  data: {
+    home_team: '',
+    home_team_score: '',
+    away_team: '',
+    away_team_score: '',
+    match_date: ''
+  },
+  methods: {
+    save: function(event) {
+        axios.post('/match/history', {home_team:this.home_team,home_team_score:this.home_team_score,away_team:this.away_team,away_team_score:this.away_team_score,match_date:this.match_date}, {headers: {
+            'Content-Type':'application/json;charset=UTF-8'
+          }}).then(function(response) {
+                alert("添加成功");
+            })
+            .catch(function(error) {
+                alert("操作失败");
+            });
+    }
+  }
+})
+</script>
+</body>
+</html>

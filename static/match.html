@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<script src="./vue.min.js"></script>
+<script src="./axios.min.js"></script>
+</head>
+<body>
+<div id="main">
+  <p>输入主队信息：</p>
+  <input v-model="home_team" placeholder="输入主队名称"><br/>
+  <input v-model="home_team_score" placeholder="输入得分"><br/>
+  <p>输入客队信息：</p>
+  <input v-model="away_team" placeholder="输入客队名称"><br/>
+  <input v-model="away_team_score" placeholder="输入得分"><br/>
+
+</div>
+  <button v-on:click="save">保存</button>
+<script>
+var app = new Vue({
+  el: '#main',
+  data: {
+    teams: [],
+    home_team: '',
+    home_team_score: '',
+    away_team: '',
+    away_team_score: ''
+  },
+  created:function(){
+    axios.post('/teams')
+        .then(function(response) {
+            this.teams = response.teams;
+        }).catch(function(error){
+            alert("加载队伍列表失败");
+        });
+  },
+  methods: {
+    save: function(event) {
+        axios.post('/player', {name:this.name,salary:this.salary,team:this.team}, {headers: {
+            'Content-Type':'application/json;charset=UTF-8'
+          }}).then(function(response) {
+                alert("添加成功");
+            })
+            .catch(function(error) {
+                alert("操作失败");
+            });
+    }
+  }
+})
+</script>
+</body>
+</html>
