@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 <script src="./vue.min.js"></script>
 <script src="./axios.min.js"></script>
@@ -8,12 +9,10 @@
 <body>
 <div id="main">
   <p>输入新队员信息：</p>
-  <form style="width=100%">
-    <input v-model="name" placeholder="输入姓名"><br/>
-    <input v-model="salary" placeholder="输入薪资"><br/>
-    <input v-model="team" placeholder="队伍序号"><br/>
-  </form>
-  <p>{{ name }}</p>
+  <input v-model="name" placeholder="输入姓名"><br/>
+  <input v-model="salary" placeholder="输入薪资"><br/>
+  <input v-model="team" placeholder="队伍序号"><br/>
+  <button v-on:click="save">保存</button>
 </div>
 <script>
 var app = new Vue({
@@ -22,7 +21,18 @@ var app = new Vue({
     name: '',
     salary: '',
     team: '',
-    message: 'GBA'
+  },
+  methods: {
+    save: function(event) {
+        axios.post('/player', {name:this.name,salary:this.salary,team:this.team}, {headers: {
+            'Content-Type':'application/json;charset=UTF-8'
+          }}).then(function(response) {
+                alert("添加成功");
+            })
+            .catch(function(error) {
+                alert("操作失败");
+            });
+    }
   }
 })
 </script>

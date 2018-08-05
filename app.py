@@ -4,6 +4,7 @@
 from flask import Flask,jsonify,render_template,request
 from flask_sqlalchemy import SQLAlchemy
 from marshmallow import Schema, fields, ValidationError, pre_load
+from datetime import datetime
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:Password01!@localhost/gba?charset=utf8mb4'
@@ -27,20 +28,37 @@ teams_schema = TeamSchema(many=True)
 class Player(db.Model):
     __tablename__='PLAYER'
     id = db.Column(db.Integer,primary_key=True)
-    team_id = db.Column(db.Integer,nullable=True)
+    team_id = db.Column(db.Integer,db.ForeignKey('TEAM.id'),nullable=True)
     name = db.Column(db.String(80),nullable=False)
     salary = db.Column(db.Integer,nullable=True)
-    #create_date
-    #update_date
+
+    def __init__(self,name,team_id,salary):
+        self.name = name
+        self.team_id = team_id
+        self.salary = salary
+
+    def __repr__(self):
+        return '<Player %r>' % self.name
 
 class Match(db.Model):
     __tablename__='MATCH'
     id = db.Column(db.Integer,primary_key=True)
-    #match_date
-    home_team_id = db.Column(db.Integer,nullable=False)
-    away_team_id = db.Column(db.Integer,nullable=False)
-    #home_team_score
-    #away_team_score
+    match_date = db.Column(db.DateTime)
+    home_team_id = db.Column(db.Integer,db.ForeignKey('TEAM.id'),nullable=False)
+    away_team_id = db.Column(db.Integer,db.ForeignKey('TEAM.id'),nullable=False)
+
+    def __init__(self, home_team_id, away_team_id):
+        self.home_team_id = home_team_id
+        self.away_team_id = away_team_id
+        if match_date is None:
+            match_date = datetime.utcnow()
+        self.match_date = match_date
+
+class MatchPlayer(db.Model):
+    __tablename__='MATCH_PLAYER'
+  
+class Score(db.Model):
+    __tablename__='SCORE'
 
 class MatchDetail(db.Model):
     __tablename__='MATCH_DETAIL'
@@ -82,5 +100,25 @@ def team_clean():
 def get_teams_html():
     teams = Team.query.all()
     return render_template('team.html',teams=teams)
+
+@app.route("/players",methods=['GET'])
+def players_list():
+    players = Player.query.all()
+    return render_template('player.html',players=players)
+
+@app.route("/player",methods=['POST'])
+def player_add():
+    req_data = request.get_json()
+    print(req_data)
+    player_name = req_data['name']
+    player_team = req_data['team']
+    if(player_team == ''):
+        player_team = None
+        print("team is null")
+    salary = req_data['salary']
+    player = Player(player_name,player_team,salary)
+    db.session.add(player)
+    db.session.commit()
+    return "保存成功"
 
 db.create_all()
