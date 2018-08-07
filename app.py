@@ -72,6 +72,13 @@ class MatchDetail(db.Model):
     three_point = db.Column(db.Integer)
     free_throw = db.Column(db.Integer)
 
+class ScoreBonus(db.Model):
+    __tablename__='MATCH_BONUS'
+    id = db.Column(db.Integer,primary_key=True)
+    team_id = db.Column(db.Integer,db.ForeignKey('TEAM.id'),nullable=False)
+    score = db.Column(db.Integer,nullable=False)
+    reason = db.Column(db.String(250))
+
 @app.route("/")
 def home():
     return "X86黄金联赛(GBA)"
@@ -159,27 +166,42 @@ def matchs_list():
     teams = Team.query.all()
     scores = {}
     pre_match_winner_id = None
+    pre_match_date = None
     for match in matches:
+        if(match.match_date.day != pre_match_date):
+            pre_match_winner_id = None
+            pre_match_date = match.match_date.day
         if(not scores.has_key(match.home_team_id)):
             scores[match.home_team_id] = 0
         if(not scores.has_key(match.away_team_id)):
             scores[match.away_team_id] = 0
         if(match.home_team_score > match.away_team_score):
             scores[match.home_team_id] += match.home_team_score
-            scores[match.home_team_id] += 4
+            if(match.away_team_score == 0):
+                scores[match.home_team_id] += 8
+            if(match.away_team_id != 4):
+                scores[match.home_team_id] += 4
             scores[match.away_team_id] += match.away_team_score
             if(match.home_team_id == 4):
                 scores[match.away_team_id] -= 4
-            if(pre_match_winner_id != None and pre_match_winner_id == match.home_team_id):
+            if(pre_match_winner_id != None and pre_match_winner_id == match.home_team_id and match.away_team_id != 4):
                 scores[match.home_team_id] += 4
             pre_match_winner_id = match.home_team_id
         else:
             scores[match.away_team_id] += match.away_team_score
-            scores[match.away_team_id] += 4
+            if(match.home_team_id != 4):
+                scores[match.away_team_id] += 4
+            if(match.home_team_score == 0):
+                scores[match.away_team_id] += 8
             scores[match.home_team_id] += match.home_team_score
             if(match.away_team_id == 4):
                 scores[match.home_team_id] -= 4
             pre_match_winner_id = match.away_team_id
+
+    #score bonus
+    bonus = ScoreBonus.query.all()
+    for b in bonus:
+        scores[b.team_id] += b.score
 
     team_dic = {}
     for team in teams:
