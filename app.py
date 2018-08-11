@@ -5,6 +5,7 @@ from flask import Flask,jsonify,render_template,request
 from flask_sqlalchemy import SQLAlchemy
 from marshmallow import Schema, fields, ValidationError, pre_load
 from datetime import datetime
+from gba import MatchResult
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:Password01!@localhost/gba?charset=utf8mb4'
@@ -181,12 +182,26 @@ def matchs_list():
     matches = Match.query.order_by(Match.match_date).all()
     teams = Team.query.all()
     scores = {}
+    play_times = {}
+    for t in teams:
+        play_times[t.id]=0
+
     pre_match_winner_id = None
     pre_match_date = None
+    tm = MatchResult(teams)
     for match in matches:
+        tm.add_match(match.home_team_id,match.home_team_score,match.away_team_id,match.away_team_score)
         if(match.match_date.day != pre_match_date):
             pre_match_winner_id = None
             pre_match_date = match.match_date.day
+            tm.end_add_match()
+
+        #出场次数 begin
+        play_times[match.away_team_id] += 1
+        if(pre_match_winner_id == None):
+            play_times[match.home_team_id] += 1
+        #出场次数 end
+
         if(not scores.has_key(match.home_team_id)):
             scores[match.home_team_id] = 0
         if(not scores.has_key(match.away_team_id)):
@@ -214,6 +229,7 @@ def matchs_list():
                 scores[match.home_team_id] -= 4
             pre_match_winner_id = match.away_team_id
 
+    tm.end_add_match()
     #score bonus
     bonus = ScoreBonus.query.all()
     for b in bonus:
@@ -223,7 +239,7 @@ def matchs_list():
     for t in teams:
         time = Match.query.filter((Match.home_team_id==t.id) | (Match.away_team_id==t.id)).count()
         sc = scores[t.id]
-        mv = TeamView(t.name,sc,time)
+        mv = TeamView(t.name,sc,time,play_times[t.id],tm.best_inarow[t.id])
         team_views.append(mv)
 
     matches_filter = []
@@ -244,9 +260,11 @@ class MatchView:
         self.away_team_score=away_score
 
 class TeamView:
-    def __init__(self,team_name,team_score,team_times):
+    def __init__(self,team_name,team_score,team_times,play_times,best_inarow):
         self.name = team_name
         self.score = team_score
         self.times = team_times
+        self.play_times = play_times
+        self.best_inarow = best_inarow
 
 db.create_all()
