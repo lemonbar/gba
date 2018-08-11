@@ -141,6 +141,22 @@ def match_history_load():
     teams = Team.query.all()
     return render_template('match_history.html', teams=teams)
 
+@app.route("/match/bonus",methods=['GET'])
+def match_bonus_load():
+    teams = Team.query.all()
+    return render_template('match_bonus.html', teams=teams)
+
+@app.route("/match/bonus",methods=['POST'])
+def match_bonus_add():
+    req_data = request.get_json()
+    team_id = req_data['team_id']
+    score = req_data['score']
+    reason = req_data['reason']
+    bonus = ScoreBonus(team_id=team_id,score=score,reason=reason)
+    db.session.add(bonus)
+    db.session.commit()
+    return "保存成功"
+
 @app.route("/match/history",methods=['POST'])
 def match_history_add():
     req_data = request.get_json()
@@ -203,9 +219,34 @@ def matchs_list():
     for b in bonus:
         scores[b.team_id] += b.score
 
+    team_views = []
+    for t in teams:
+        time = Match.query.filter((Match.home_team_id==t.id) | (Match.away_team_id==t.id)).count()
+        sc = scores[t.id]
+        mv = TeamView(t.name,sc,time)
+        team_views.append(mv)
+
+    matches_filter = []
+    for m in matches:
+        mv = MatchView(m.home_team_id,m.away_team_id,m.match_date.strftime("%Y-%m-%d"),m.home_team_score,m.away_team_score)
+        matches_filter.append(mv)
     team_dic = {}
     for team in teams:
         team_dic[team.id]=team.name
-    return render_template('matches.html', matches=matches,teams=team_dic,scores=scores)
+    return render_template('matches.html', matches=matches_filter,teams=team_dic,scores=team_views)
+
+class MatchView:
+    def __init__(self,home_id,away_id,date,home_score,away_score):
+        self.home_team_id=home_id
+        self.away_team_id=away_id
+        self.match_date=date
+        self.home_team_score=home_score
+        self.away_team_score=away_score
+
+class TeamView:
+    def __init__(self,team_name,team_score,team_times):
+        self.name = team_name
+        self.score = team_score
+        self.times = team_times
 
 db.create_all()

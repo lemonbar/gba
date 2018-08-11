@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<script src="/static/vue.min.js"></script>
+<script src="/static/axios.min.js"></script>
+</head>
+<body>
+<div id="main">
+  <p>选择加分队伍：</p>
+  <select v-model="team_id">
+  {% for team in teams %}
+    <option value="{{ team.id }}">{{ team.name }}</option>
+  {% endfor %}
+  </select>
+  <input v-model="score" placeholder="输入加分"><br/>
+  <input v-model="reason" placeholder="输入加分原因"><br/>
+  <button v-on:click="save">保存</button>
+</div>
+<script>
+var app = new Vue({
+  el: '#main',
+  data: {
+    team_id: '',
+    score: '',
+    reason: ''
+  },
+  methods: {
+    save: function(event) {
+        axios.post('/match/bonus', {team_id:this.team_id,score:this.score,reason:this.reason}, {headers: {
+            'Content-Type':'application/json;charset=UTF-8'
+          }}).then(function(response) {
+                alert("添加成功");
+            })
+            .catch(function(error) {
+                alert("操作失败");
+            });
+    }
+  }
+})
+</script>
+</body>
+</html>

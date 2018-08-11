@@ -12,11 +12,13 @@
 <tr>
 <th>队伍</th>
 <th>积分</th>
+<th>出场次数</th>
 </tr>
-{% for team_id,score in scores.items() %}
+{% for s in scores %}
  <tr>
-<td>{{ teams[team_id] }}</td>
-<td>{{ score }}</td>
+<td>{{ s.name }}</td>
+<td>{{ s.score }}</td>
+<td>{{ s.times }}</td>
 </tr>
 {% endfor %}
   </table>
