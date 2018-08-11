@@ -239,7 +239,7 @@ def matchs_list():
     for t in teams:
         time = Match.query.filter((Match.home_team_id==t.id) | (Match.away_team_id==t.id)).count()
         sc = scores[t.id]
-        mv = TeamView(t.name,sc,time,play_times[t.id],tm.best_inarow[t.id])
+        mv = TeamView(t.name,sc,time,play_times[t.id],tm.best_inarow[t.id],tm.winners[t.id],tm.losers[t.id])
         team_views.append(mv)
 
     matches_filter = []
@@ -260,11 +260,13 @@ class MatchView:
         self.away_team_score=away_score
 
 class TeamView:
-    def __init__(self,team_name,team_score,team_times,play_times,best_inarow):
+    def __init__(self,team_name,team_score,team_times,play_times,best_inarow,winners,losers):
         self.name = team_name
         self.score = team_score
         self.times = team_times
         self.play_times = play_times
         self.best_inarow = best_inarow
+        self.winners = winners
+        self.losers = losers
 
 db.create_all()
