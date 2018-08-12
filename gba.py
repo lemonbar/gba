@@ -9,16 +9,27 @@ class MatchResult:
         self.winners = {}
         self.losers = {}
         self.teams = teams
+        self.points = {}
+        self.lose_points = {}
+        self.challenge_rejects = {}
         self.clear()
         for team in self.teams:
             self.winners[team.id] = 0
             self.losers[team.id] = 0
+            self.points[team.id] = 0
+            self.lose_points[team.id] = 0
+            self.challenge_rejects[team.id] = 0
 
     def add_match(self, home_id, home_score, away_id, away_score):
+        self.points[home_id] += home_score
+        self.lose_points[home_id] += away_score
+        self.lose_points[away_id] += home_score
+        self.points[away_id] += away_score
         if(home_score > away_score):#主场赢球
             self.win_inarow[home_id] += 1
             self.winners[home_id] += 1
             self.losers[away_id] += 1
+            self.challenge_rejects[away_id] += 1
         else:#客场赢球
             self.win_inarow[away_id] = 1
             self.winners[away_id] += 1

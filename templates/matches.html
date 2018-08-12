@@ -12,27 +12,47 @@
 <tr>
 <th>队伍</th>
 <th>积分</th>
-<th>场次(胜:负:上场:最长连胜)</th>
+<th>进球(失球)</th>
 </tr>
 {% for s in scores %}
  <tr>
 <td>{{ s.name }}</td>
 <td>{{ s.score }}</td>
-<td>{{ s.times }}({{ s.winners }}:{{ s.losers }}:{{ s.play_times }}:{{ s.best_inarow }})</td>
+<td>{{ s.points }}({{ s.lose_points }})</td>
 </tr>
 {% endfor %}
   </table>
+<br/>
+  <table>
+<tr>
+<th>队伍</th>
+<th>出场次数(挑战失败)</th>
+<th>比赛场次</th>
+<th>胜/负</th>
+<th>最长连胜</th>
+</tr>
+{% for s in scores %}
+ <tr>
+<td>{{ s.name }}</td>
+<td>{{ s.play_times }}({{ s.challenge_rejects }})</td>
+<td>{{ s.times }}</td>
+<td>{{ s.winners }}/{{ s.losers }}</td>
+<td>{{ s.best_inarow }}</td>
+</tr>
+{% endfor %}
+  </table>
+<br/>
   <table>
     <tr>
+<th>比赛时间</th>
       <th>主队:得分</th>
       <th>客队:得分</th>
-<th>比赛时间</th>
     </tr>
 {% for match in matches %}
     <tr>
+    <td>{{ match.match_date }}</td>
     <td>{{ teams[match.home_team_id] }}:{{ match.home_team_score }}</td>
     <td>{{ teams[match.away_team_id] }}:{{ match.away_team_score }}</td>
-    <td>{{ match.match_date }}</td>
     </tr>
 {% endfor %}
   </table>

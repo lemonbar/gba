@@ -4,6 +4,7 @@
 from flask import Flask,jsonify,render_template,request
 from flask_sqlalchemy import SQLAlchemy
 from marshmallow import Schema, fields, ValidationError, pre_load
+from sqlalchemy import desc
 from datetime import datetime
 from gba import MatchResult
 
@@ -239,9 +240,10 @@ def matchs_list():
     for t in teams:
         time = Match.query.filter((Match.home_team_id==t.id) | (Match.away_team_id==t.id)).count()
         sc = scores[t.id]
-        mv = TeamView(t.name,sc,time,play_times[t.id],tm.best_inarow[t.id],tm.winners[t.id],tm.losers[t.id])
+        mv = TeamView(t.name,sc,time,play_times[t.id],tm.best_inarow[t.id],tm.winners[t.id],tm.losers[t.id],tm.points[t.id],tm.lose_points[t.id],tm.challenge_rejects[t.id])
         team_views.append(mv)
 
+    matches = Match.query.order_by(desc(Match.match_date)).all()
     matches_filter = []
     for m in matches:
         mv = MatchView(m.home_team_id,m.away_team_id,m.match_date.strftime("%Y-%m-%d"),m.home_team_score,m.away_team_score)
@@ -260,7 +262,7 @@ class MatchView:
         self.away_team_score=away_score
 
 class TeamView:
-    def __init__(self,team_name,team_score,team_times,play_times,best_inarow,winners,losers):
+    def __init__(self,team_name,team_score,team_times,play_times,best_inarow,winners,losers,points,lose_points,challenge_rejects):
         self.name = team_name
         self.score = team_score
         self.times = team_times
@@ -268,5 +270,8 @@ class TeamView:
         self.best_inarow = best_inarow
         self.winners = winners
         self.losers = losers
+        self.points = points
+        self.lose_points = lose_points
+        self.challenge_rejects = challenge_rejects
 
 db.create_all()
