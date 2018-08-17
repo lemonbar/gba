@@ -12,13 +12,15 @@
 <tr>
 <th>队伍</th>
 <th>积分</th>
-<th>进球(失球)</th>
+<th>进球(场均)</th>
+<th>失球(场均)</th>
 </tr>
 {% for s in scores %}
  <tr>
 <td>{{ s.name }}</td>
 <td>{{ s.score }}</td>
-<td>{{ s.points }}({{ s.lose_points }})</td>
+<td>{{ s.points }}({{ s.points_per_match }})</td>
+<td>{{ s.lose_points }}({{ s.lose_points_per_match }})</td>
 </tr>
 {% endfor %}
   </table>

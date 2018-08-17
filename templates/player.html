@@ -1,27 +1,45 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<script src="./static/vue.min.js"></script>
-<link rel="stylesheet" href="./static/app.css" type="text/css">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<script src="./vue.min.js"></script>
+<script src="./axios.min.js"></script>
 </head>
 <body>
 <div id="main">
-  <table>
-    <tr>
-      <th>姓名</th>
-      <th>队名</th>
-      <th>薪资</th>
-    </tr>
-{% for player in players %}
-    <tr>
-    <td>{{ player.name }}</td>
-    <td>{{ player.team_id }}</td>
-    <td>{{ player.salary }}</td>
-    </tr>
-{% endfor %}
-  </table>
+  <p>输入新队员信息：</p>
+  <input v-model="name" placeholder="输入姓名"><br/>
+  <input v-model="salary" placeholder="输入薪资"><br/>
+  <p>选择队伍：</p>
+  <select v-model="team">
+  {% for team in teams %}
+    <option value="{{ team.id }}">{{ team.name }}</option>
+  {% endfor %}
+  </select>
+  <button v-on:click="save">保存</button>
 </div>
+<script>
+var app = new Vue({
+  el: '#main',
+  data: {
+    name: '',
+    salary: '',
+    team: '',
+  },
+  methods: {
+    save: function(event) {
+        axios.post('/player', {name:this.name,salary:this.salary,team:this.team}, {headers: {
+            'Content-Type':'application/json;charset=UTF-8'
+          }}).then(function(response) {
+                alert("添加成功");
+            })
+            .catch(function(error) {
+                alert("操作失败");
+            });
+    }
+  }
+})
+</script>
 </body>
 </html>

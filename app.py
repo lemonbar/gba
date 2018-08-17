@@ -7,6 +7,7 @@ from marshmallow import Schema, fields, ValidationError, pre_load
 from sqlalchemy import desc
 from datetime import datetime
 from gba import MatchResult
+from decimal import Decimal
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:Password01!@localhost/gba?charset=utf8mb4'
@@ -120,8 +121,12 @@ def get_teams_html():
 
 @app.route("/players",methods=['GET'])
 def players_list():
-    players = Player.query.all()
-    return render_template('player.html',players=players)
+    players = Player.query.order_by(Player.team_id).all()
+    teams = Team.query.all()
+    team_dic = {}
+    for team in teams:
+        team_dic[team.id]=team.name
+    return render_template('players.html',players=players,teams=team_dic)
 
 @app.route("/player",methods=['POST'])
 def player_add():
@@ -137,6 +142,11 @@ def player_add():
     db.session.add(player)
     db.session.commit()
     return "保存成功"
+
+@app.route("/player",methods=['GET'])
+def player_add_static():
+    teams = Team.query.all()
+    return render_template('player.html', teams=teams)
 
 @app.route("/match/history",methods=['GET'])
 def match_history_load():
@@ -271,7 +281,9 @@ class TeamView:
         self.winners = winners
         self.losers = losers
         self.points = points
+        self.points_per_match = Decimal(float(points)/float(team_times)).quantize(Decimal('0.00'))
         self.lose_points = lose_points
+        self.lose_points_per_match = Decimal(float(lose_points)/float(team_times)).quantize(Decimal('0.00'))
         self.challenge_rejects = challenge_rejects
 
 db.create_all()
