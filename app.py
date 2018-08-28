@@ -190,7 +190,7 @@ def match_history_add():
 
 @app.route("/matches",methods=['GET'])
 def matchs_list():
-    matches = Match.query.order_by(Match.match_date).all()
+    matches = Match.query.filter(Match.match_date < '2018-08-28').order_by(Match.match_date).all()
     teams = Team.query.all()
     scores = {}
     play_times = {}
@@ -248,7 +248,7 @@ def matchs_list():
 
     team_views = []
     for t in teams:
-        time = Match.query.filter((Match.home_team_id==t.id) | (Match.away_team_id==t.id)).count()
+        time = Match.query.filter(Match.match_date < '2018-08-28').filter((Match.home_team_id==t.id) | (Match.away_team_id==t.id)).count()
         sc = scores[t.id]
         mv = TeamView(t.name,sc,time,play_times[t.id],tm.best_inarow[t.id],tm.winners[t.id],tm.losers[t.id],tm.points[t.id],tm.lose_points[t.id],tm.challenge_rejects[t.id])
         team_views.append(mv)
