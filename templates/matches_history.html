@@ -28,14 +28,18 @@
   <table>
 <tr>
 <th>队伍</th>
+<th>出场次数(挑战失败)</th>
 <th>比赛场次</th>
 <th>胜/负</th>
+<th>最长连胜</th>
 </tr>
 {% for s in scores %}
  <tr>
 <td>{{ s.name }}</td>
+<td>{{ s.play_times }}({{ s.challenge_rejects }})</td>
 <td>{{ s.times }}</td>
 <td>{{ s.winners }}/{{ s.losers }}</td>
+<td>{{ s.best_inarow }}</td>
 </tr>
 {% endfor %}
   </table>

@@ -190,12 +190,88 @@ def match_history_add():
 
 @app.route("/matches",methods=['GET'])
 def matchs_list():
+    matches = Match.query.filter(Match.match_date > '2018-08-28').order_by(Match.match_date).all()
+    teams = Team.query.all()
+    scores = {}
+    play_times = {}
+    for t in teams:
+        play_times[t.id]=0
+        scores[t.id]=0
+
+    pre_match_winner_id = None
+    pre_match_date = None
+    tm = MatchResult(teams)
+    for match in matches:
+        tm.add_match(match.home_team_id,match.home_team_score,match.away_team_id,match.away_team_score)
+        if(match.match_date.day != pre_match_date):
+            pre_match_winner_id = None
+            pre_match_date = match.match_date.day
+            tm.end_add_match()
+
+        #出场次数 begin
+        play_times[match.away_team_id] += 1
+        if(pre_match_winner_id == None):
+            play_times[match.home_team_id] += 1
+        #出场次数 end
+
+        if(not scores.has_key(match.home_team_id)):
+            scores[match.home_team_id] = 0
+        if(not scores.has_key(match.away_team_id)):
+            scores[match.away_team_id] = 0
+        if(match.home_team_score > match.away_team_score):
+            scores[match.home_team_id] += match.home_team_score
+            if(match.away_team_score == 0):
+                scores[match.home_team_id] += 8
+            if(match.away_team_id != 4):
+                scores[match.home_team_id] += 4
+            scores[match.away_team_id] += match.away_team_score
+            if(match.home_team_id == 4):
+                scores[match.away_team_id] -= 4
+            if(pre_match_winner_id != None and pre_match_winner_id == match.home_team_id and match.away_team_id != 4):
+                scores[match.home_team_id] += 4
+            pre_match_winner_id = match.home_team_id
+        else:
+            scores[match.away_team_id] += match.away_team_score
+            if(match.home_team_id != 4):
+                scores[match.away_team_id] += 4
+            if(match.home_team_score == 0):
+                scores[match.away_team_id] += 8
+            scores[match.home_team_id] += match.home_team_score
+            if(match.away_team_id == 4):
+                scores[match.home_team_id] -= 4
+            pre_match_winner_id = match.away_team_id
+
+    tm.end_add_match()
+    #score bonus
+    bonus = ScoreBonus.query.all()
+    for b in bonus:
+        scores[b.team_id] += b.score
+
+    team_views = []
+    for t in teams:
+        time = Match.query.filter(Match.match_date > '2018-08-28').filter((Match.home_team_id==t.id) | (Match.away_team_id==t.id)).count()
+        mv = TeamView(t.name,tm.scores[t.id],time,play_times[t.id],tm.best_inarow[t.id],tm.winners[t.id],tm.losers[t.id],tm.points[t.id],tm.lose_points[t.id],tm.challenge_rejects[t.id])
+        team_views.append(mv)
+
+    matches = Match.query.filter(Match.match_date > '2018-08-28').order_by(desc(Match.match_date)).all()
+    matches_filter = []
+    for m in matches:
+        mv = MatchView(m.home_team_id,m.away_team_id,m.match_date.strftime("%Y-%m-%d"),m.home_team_score,m.away_team_score)
+        matches_filter.append(mv)
+    team_dic = {}
+    for team in teams:
+        team_dic[team.id]=team.name
+    return render_template('matches.html', matches=matches_filter,teams=team_dic,scores=team_views)
+
+@app.route("/matches/history",methods=['GET'])
+def matchs_list_history():
     matches = Match.query.filter(Match.match_date < '2018-08-28').order_by(Match.match_date).all()
     teams = Team.query.all()
     scores = {}
     play_times = {}
     for t in teams:
         play_times[t.id]=0
+        scores[t.id]=0
 
     pre_match_winner_id = None
     pre_match_date = None
@@ -253,7 +329,7 @@ def matchs_list():
         mv = TeamView(t.name,sc,time,play_times[t.id],tm.best_inarow[t.id],tm.winners[t.id],tm.losers[t.id],tm.points[t.id],tm.lose_points[t.id],tm.challenge_rejects[t.id])
         team_views.append(mv)
 
-    matches = Match.query.order_by(desc(Match.match_date)).all()
+    matches = Match.query.filter(Match.match_date < '2018-08-28').order_by(desc(Match.match_date)).all()
     matches_filter = []
     for m in matches:
         mv = MatchView(m.home_team_id,m.away_team_id,m.match_date.strftime("%Y-%m-%d"),m.home_team_score,m.away_team_score)
@@ -261,7 +337,7 @@ def matchs_list():
     team_dic = {}
     for team in teams:
         team_dic[team.id]=team.name
-    return render_template('matches.html', matches=matches_filter,teams=team_dic,scores=team_views)
+    return render_template('matches_history.html', matches=matches_filter,teams=team_dic,scores=team_views)
 
 class MatchView:
     def __init__(self,home_id,away_id,date,home_score,away_score):
@@ -281,9 +357,10 @@ class TeamView:
         self.winners = winners
         self.losers = losers
         self.points = points
-        self.points_per_match = Decimal(float(points)/float(team_times)).quantize(Decimal('0.00'))
         self.lose_points = lose_points
-        self.lose_points_per_match = Decimal(float(lose_points)/float(team_times)).quantize(Decimal('0.00'))
+        if (team_times > 0):
+            self.points_per_match = Decimal(float(points)/float(team_times)).quantize(Decimal('0.00'))
+            self.lose_points_per_match = Decimal(float(lose_points)/float(team_times)).quantize(Decimal('0.00'))
         self.challenge_rejects = challenge_rejects
 
 db.create_all()

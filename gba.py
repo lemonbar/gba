@@ -12,11 +12,13 @@ class MatchResult:
         self.points = {}
         self.lose_points = {}
         self.challenge_rejects = {}
+        self.scores = {}
         self.clear()
         for team in self.teams:
             self.winners[team.id] = 0
             self.losers[team.id] = 0
             self.points[team.id] = 0
+            self.scores[team.id] = 0
             self.lose_points[team.id] = 0
             self.challenge_rejects[team.id] = 0
 
@@ -28,11 +30,15 @@ class MatchResult:
         if(home_score > away_score):#主场赢球
             self.win_inarow[home_id] += 1
             self.winners[home_id] += 1
+            self.scores[home_id] += (home_score + 3)
+            self.scores[away_id] += (away_score)
             self.losers[away_id] += 1
             self.challenge_rejects[away_id] += 1
         else:#客场赢球
             self.win_inarow[away_id] = 1
             self.winners[away_id] += 1
+            self.scores[home_id] += (home_score)
+            self.scores[away_id] += (away_score + 3)
             self.losers[home_id] += 1
             if((self.best_inarow.has_key(home_id) and self.best_inarow[home_id] < self.win_inarow[home_id]) or (not self.best_inarow.has_key(home_id))):
                 self.best_inarow[home_id] = self.win_inarow[home_id]
