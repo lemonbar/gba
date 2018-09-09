@@ -202,7 +202,7 @@ def matchs_list():
     pre_match_date = None
     tm = MatchResult(teams)
     for match in matches:
-        tm.add_match(match.home_team_id,match.home_team_score,match.away_team_id,match.away_team_score)
+        tm.add_match(match.home_team_id,match.home_team_score,match.away_team_id,match.away_team_score,match.match_date)
         if(match.match_date.day != pre_match_date):
             pre_match_winner_id = None
             pre_match_date = match.match_date.day
@@ -277,7 +277,7 @@ def matchs_list_history():
     pre_match_date = None
     tm = MatchResult(teams)
     for match in matches:
-        tm.add_match(match.home_team_id,match.home_team_score,match.away_team_id,match.away_team_score)
+        tm.add_match(match.home_team_id,match.home_team_score,match.away_team_id,match.away_team_score,match.match_date)
         if(match.match_date.day != pre_match_date):
             pre_match_winner_id = None
             pre_match_date = match.match_date.day
